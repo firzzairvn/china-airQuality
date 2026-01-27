@@ -190,6 +190,6 @@ with tab4:
                 tooltip=f"<b>{row['station']}</b><br>PM2.5: {row['avg_PM2_5']:.2f} µg/m³"
             ).add_to(m)
 
-        st_folium(m, width=1000, height=500)
+        st_folium(m, width=1500, height=1000)
     else:
         st.warning("Tidak ada data lokasi yang valid untuk ditampilkan di peta.")
