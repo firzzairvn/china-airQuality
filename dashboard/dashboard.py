@@ -1,158 +1,3 @@
-# import streamlit as st
-# import pandas as pd
-# import folium
-# import seaborn as sns
-# import matplotlib.pyplot as plt
-# from streamlit_folium import st_folium
-
-# from data_preprocessing import load_and_preprocess_data, get_color, station_coordinates, get_season, categorize_pm25
-
-# st.set_page_config(
-#     page_title="Air Quality Dashboard",
-#     layout="wide",
-#     initial_sidebar_state="expanded"
-# )
-
-# # Load data
-# with st.spinner('Loading and preprocessing data... This might take a moment.'):
-#     df_pm25 = load_and_preprocess_data()
-
-# #Sidebar
-# st.sidebar.title("Air Quality Dashboard")
-# st.sidebar.info("This dashboard visualizes PM2.5 concentrations across various stations, daily, monthly, and seasonal patterns, and air quality categories.")
-
-# #Title
-# st.title("Air Quality Analysis in China")
-
-
-# st.subheader("1. Areas with Highest Risk (Geographic Map)")
-
-# if not df_pm25.empty:
-#     avgpm25_perStation_map_data = df_pm25.groupby('station').agg(
-#         avg_PM2_5=('PM2.5', 'mean'),
-#         latitude=('latitude', 'first'),
-#         longitude=('longitude', 'first')
-#     ).reset_index()
-
-#     center_lat = avgpm25_perStation_map_data['latitude'].mean() if not avgpm25_perStation_map_data['latitude'].isnull().all() else 39.9
-#     center_lon = avgpm25_perStation_map_data['longitude'].mean() if not avgpm25_perStation_map_data['longitude'].isnull().all() else 116.4
-
-#     folium_map = folium.Map(
-#         location=[center_lat, center_lon],
-#         zoom_start=6
-#     )
-
-#     for index, row in avgpm25_perStation_map_data.iterrows():
-#         lat = row['latitude']
-#         lon = row['longitude']
-#         station_name = row['station']
-#         avg_pm25 = row['avg_PM2_5']
-
-#         if pd.isna(lat) or pd.isna(lon) or pd.isna(avg_pm25):
-#             continue
-
-#         color = get_color(avg_pm25)
-#         radius = (avg_pm25 / 10) + 5
-
-#         folium.CircleMarker(
-#             location=[lat, lon],
-#             radius=radius,
-#             color=color,
-#             fill=True,
-#             fill_color=color,
-#             fill_opacity=0.7,
-#             tooltip=f"Station: {station_name}<br>Avg PM2.5: {avg_pm25:.2f} \u00B5g/m\u00B3<br>Category: {categorize_pm25(avg_pm25)}",
-#         ).add_to(folium_map)
-
-#     st_folium(folium_map, width=1000, height=500)
-# else:
-#     st.warning("No data available to display the map.")
-
-# # --- Question 1 ----
-# st.subheader("Highest Risk Areas by PM2.5 Concentration")
-
-# if not df_pm25.empty:
-#     avgpm25_perStation = df_pm25.groupby('station')['PM2.5'].mean().sort_values(ascending=False)
-
-#     fig, ax = plt.subplots(figsize=(12, 6))
-#     sns.barplot(x=avgpm25_perStation.index, y=avgpm25_perStation.values, palette='viridis', ax=ax)
-#     ax.set_title('Average PM2.5 Concentration per Station (\u00B5g/m\u00B3)')
-#     ax.set_xlabel('Station')
-#     ax.set_ylabel('Average PM2.5 (\u00B5g/m\u00B3)')
-#     ax.tick_params(axis='x', rotation=45)
-#     st.pyplot(fig)
-# else:
-#     st.warning("No data available to display 'Highest Risk Areas' bar chart.")
-
-
-# # --- Question 2 ---
-# st.subheader("2. PM2.5 Air Quality Patterns Over Time")
-
-# if not df_pm25.empty:
-#     st.markdown("### Daily Pattern")
-#     daily_pm25_pattern = df_pm25.groupby('hour')['PM2.5'].mean()
-#     fig_daily, ax_daily = plt.subplots(figsize=(12, 6))
-#     sns.lineplot(x=daily_pm25_pattern.index, y=daily_pm25_pattern.values, marker='o', color='skyblue', ax=ax_daily)
-#     ax_daily.set_title('Daily Pattern of PM2.5 Concentration')
-#     ax_daily.set_xlabel('Hour of Day')
-#     ax_daily.set_ylabel('Average PM2.5 (\u00B5g/m\u00B3)')
-#     ax_daily.set_xticks(range(0, 24))
-#     ax_daily.grid(False)
-#     st.pyplot(fig_daily)
-
-#     st.markdown("### Monthly Pattern")
-#     monthly_pm25_pattern = df_pm25.groupby('month_name')['PM2.5'].mean()
-#     month_order = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
-#     monthly_pm25_pattern = monthly_pm25_pattern.reindex(month_order)
-#     fig_monthly, ax_monthly = plt.subplots(figsize=(12, 6))
-#     sns.lineplot(x=monthly_pm25_pattern.index, y=monthly_pm25_pattern.values, marker='o', color='salmon', ax=ax_monthly)
-#     ax_monthly.set_title('Monthly Pattern of PM2.5 Concentration')
-#     ax_monthly.set_xlabel('Month')
-#     ax_monthly.set_ylabel('Average PM2.5 (\u00B5g/m\u00B3)')
-#     ax_monthly.tick_params(axis='x', rotation=45)
-#     ax_monthly.grid(False)
-#     st.pyplot(fig_monthly)
-
-#     st.markdown("### Seasonal Pattern")
-#     seasonal_pm25_pattern = df_pm25.groupby('season')['PM2.5'].mean()
-#     season_order = ['Musim Dingin', 'Musim Semi', 'Musim Panas', 'Musim Gugur'] 
-#     seasonal_pm25_pattern = seasonal_pm25_pattern.reindex(season_order)
-#     fig_seasonal, ax_seasonal = plt.subplots(figsize=(10, 6))
-#     sns.barplot(x=seasonal_pm25_pattern.index, y=seasonal_pm25_pattern.values, palette='coolwarm', ax=ax_seasonal)
-#     ax_seasonal.set_title('Seasonal Pattern of PM2.5 Concentration')
-#     ax_seasonal.set_xlabel('Season')
-#     ax_seasonal.set_ylabel('Average PM2.5 (\u00B5g/m\u00B3)')
-#     st.pyplot(fig_seasonal)
-# else:
-#     st.warning("No data available to display 'Air Quality Patterns' charts.")
-
-
-# # --- Question 3 ---
-# st.subheader("3. Frequency of Unhealthy Air Quality Days (PM2.5 Categories)")
-
-# if not df_pm25.empty:
-#     pm25_catPercentages = df_pm25['PM2.5_category'].value_counts(normalize=True) * 100
-
-
-#     category_order = ['Baik', 'Sedang', 'Tidak Sehat (Sensitif)', 'Tidak Sehat', 'Sangat Tidak Sehat']
-#     pm25_catPercentages = pm25_catPercentages.reindex(category_order, fill_value=0)
-
-#     fig_cat, ax_cat = plt.subplots(figsize=(10, 6))
-#     sns.barplot(x=pm25_catPercentages.index, y=pm25_catPercentages.values, palette='RdYlGn_r', ax=ax_cat)
-#     ax_cat.set_title('Distribution of PM2.5 Air Quality Categories')
-#     ax_cat.set_xlabel('Air Quality Category')
-#     ax_cat.set_ylabel('Percentage (%)')
-#     ax_cat.tick_params(axis='x', rotation=45)
-#     st.pyplot(fig_cat)
-
-
-#     unhealthy_categories = ['Tidak Sehat (Sensitif)', 'Tidak Sehat', 'Sangat Tidak Sehat']
-#     unhealthy_percentage = pm25_catPercentages[pm25_catPercentages.index.isin(unhealthy_categories)].sum()
-#     st.markdown(f"**Conclusion**: Approximately **{unhealthy_percentage:.2f}%** of the time, the air quality falls into an 'Unhealthy' category based on PM2.5 standards.")
-# else:
-#     st.warning("No data available to display 'PM2.5 Category Proportions' chart.")
-
-""" Layout Lama: """
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -177,7 +22,8 @@ with st.spinner('Memuat dan memproses data...'):
 
 # --- 3. SIDEBAR FILTER (Layout Lama) ---
 st.sidebar.title("Air Quality Dashboard")
-st.sidebar.markdown(f"**Nama:** Muhammad Irvan Arfirza\n**Email:** firzzairvn@gmail.com")
+st.sidebar.markdown(f"**Nama:** Muhammad Irvan Arfirza")
+st.sidebar.markdown(f"**Email:** firzzairvn@gmail.com")
 st.sidebar.markdown("---")
 st.sidebar.header("Filter Data")
 
@@ -240,26 +86,33 @@ with tab1:
 with tab2:
     st.subheader("Pola Kualitas Udara")
     
-    col_a, col_b = st.columns(2)
     
-    with col_a:
-        st.markdown("**1. Pola Musiman**")
-        order = ['Musim Semi', 'Musim Panas', 'Musim Gugur', 'Musim Dingin']
-        # Reindex hanya jika datanya ada
-        season_df = main_df.groupby('season')['PM2.5'].mean().reindex(order).reset_index()
+    st.markdown("**1. Pola Musiman**")
+    order = ['Musim Semi', 'Musim Panas', 'Musim Gugur', 'Musim Dingin']
+    # Reindex hanya jika datanya ada
+    season_df = main_df.groupby('season')['PM2.5'].mean().reindex(order).reset_index()
         
-        fig_season, ax_season = plt.subplots(figsize=(6, 4))
-        sns.barplot(data=season_df, x='season', y='PM2.5', palette='coolwarm', ax=ax_season)
-        ax_season.set_xticklabels(ax_season.get_xticklabels(), rotation=45)
-        st.pyplot(fig_season)
+    fig_season, ax_season = plt.subplots(figsize=(10, 6))
+    sns.barplot(data=season_df, x='season', y='PM2.5', palette='rocket', ax=ax_season)
+    ax_season.set_xticklabels(ax_season.get_xticklabels(), rotation=45)
+    st.pyplot(fig_season)
+    st.markdown(
+    """
+    **Conclusion**: Analisis pola musiman menunjukkan bahwa **Musim Semi** dan **Musim Dingin** merupakan periode dengan risiko tertinggi, di mana rata-rata konsentrasi PM2.5 memuncak di kisaran **70 µg/m³**. Sebaliknya, kualitas udara cenderung membaik secara signifikan saat memasuki **Musim Panas**.
+    """
+    )
 
-    with col_b:
-        st.markdown("**2. Pola Harian (Jam)**")
-        daily_df = main_df.groupby('hour')['PM2.5'].mean()
-        fig_daily, ax_daily = plt.subplots(figsize=(6, 4))
-        sns.lineplot(x=daily_df.index, y=daily_df.values, marker='o', color='skyblue', ax=ax_daily)
-        ax_daily.set_xlabel("Jam (0-23)")
-        st.pyplot(fig_daily)
+    st.markdown("**2. Pola Harian (Jam)**")
+    daily_df = main_df.groupby('hour')['PM2.5'].mean()
+    fig_daily, ax_daily = plt.subplots(figsize=(15, 6))
+    sns.lineplot(x=daily_df.index, y=daily_df.values, marker='o', color='skyblue', ax=ax_daily)
+    ax_daily.set_xlabel("Jam (0-23)")
+    st.pyplot(fig_daily)
+    st.markdown(
+        """
+        **Conclusion**: Pola harian menunjukkan tren yang jelas di mana tingkat polusi udara **memuncak pada malam hari** (pukul 21.00 - 23.00) dengan rata-rata di atas 72 µg/m³. Kualitas udara cenderung membaik secara bertahap sejak pagi dan mencapai **kondisi terbaiknya pada sore hari** (pukul 15.00 - 16.00) sebelum kembali memburuk saat aktivitas malam dimulai.
+        """
+    )
         
     st.markdown("**3. Pola Bulanan**")
     monthly_df = main_df.groupby('month_name')['PM2.5'].mean()
@@ -270,8 +123,13 @@ with tab2:
     sns.lineplot(x=monthly_df.index, y=monthly_df.values, marker='o', color='salmon', ax=ax_month)
     ax_month.tick_params(axis='x', rotation=45)
     st.pyplot(fig_month)
+    st.markdown(
+        """
+        **Conclusion**: Analisis bulanan mengungkapkan bahwa tingkat polusi udara mencapai puncaknya pada bulan **Maret** dan **November** dengan konsentrasi rata-rata mendekati 78 µg/m³. Sebaliknya, kondisi udara paling bersih (minimum) tercatat pada bulan **Agustus** (sekitar 53 µg/m³), menunjukkan pola musiman yang kuat di mana polusi meningkat drastis pada awal dan akhir tahun.
+        """
+    )
 
-# TAB 3: Kategori (Pie Chart - Sesuai layout lama)
+# TAB 3: Kategori (Pie Chart)
 with tab3:
     st.subheader("Proporsi Kategori Udara")
     
@@ -296,7 +154,7 @@ with tab3:
     # Penjelasan singkat
     st.info("Kategori ditentukan berdasarkan standar ambang batas PM2.5.")
 
-# TAB 4: Peta Geografis (Logic Baru dengan Tampilan Peta)
+# TAB 4: Peta Geografis
 with tab4:
     st.subheader("Peta Persebaran Stasiun")
     st.write("Warna dan ukuran lingkaran menunjukkan tingkat rata-rata PM2.5.")
