@@ -29,22 +29,28 @@ st.sidebar.header("Filter Data")
 
 # Pastikan data tidak kosong sebelum membuat filter
 if not df.empty:
-    station_list = df["station"].unique()
+    station_list = sorted(df["station"].unique().tolist())
+    station_options = ["All Stations"] + station_list
+
     selected_station = st.sidebar.multiselect(
         "Pilih Stasiun:",
-        options=station_list,
-        default=station_list # Default terpilih semua
+        options=station_options,
+        default=["All Stations"]
     )
+
 
     # Filter DataFrame berdasarkan pilihan
     if not selected_station:
         st.warning("Mohon pilih minimal satu stasiun di sidebar.")
         st.stop()
-    
-    main_df = df[df["station"].isin(selected_station)]
-else:
-    st.error("Data tidak ditemukan. Pastikan file CSV ada.")
-    st.stop()
+
+    if "All Stations" in selected_station:
+        main_df = df.copy()
+    else:
+        main_df = df[df["station"].isin(selected_station)]
+
+
+
 
 # --- 4. MAIN LAYOUT (Metrics & Title) ---
 st.title("📊 Air Quality Analysis in China")
